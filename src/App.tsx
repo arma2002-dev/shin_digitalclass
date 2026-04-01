@@ -92,6 +92,7 @@ export default function App() {
   });
 
   useEffect(() => {
+    console.log('Dark mode changed:', isDarkMode);
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
