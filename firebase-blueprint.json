@@ -1,0 +1,25 @@
+{
+  "entities": {
+    "Booking": {
+      "title": "Booking",
+      "description": "A class booking record.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Student name" },
+        "email": { "type": "string", "format": "email", "description": "Student email" },
+        "phone": { "type": "string", "description": "Student phone number" },
+        "message": { "type": "string", "description": "Additional message" },
+        "date": { "type": "string", "description": "Booking date in YYYY-MM-DD format" },
+        "times": { "type": "array", "items": { "type": "string" }, "description": "Selected time slots" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of booking creation" }
+      },
+      "required": ["name", "email", "phone", "date", "times", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Collection of all student bookings."
+    }
+  }
+}

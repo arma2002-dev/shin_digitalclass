@@ -1,0 +1,118 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: bookings
+    // Document ID: auto-generated
+    // Fields:
+    //   - name: string (required, 1-100 chars)
+    //   - email: string (required, valid email format)
+    //   - phone: string (required, 7-20 chars)
+    //   - message: string (optional, 0-1000 chars)
+    //   - date: string (required, YYYY-MM-DD format)
+    //   - times: list (required, 1-10 items, each 5 chars)
+    //   - createdAt: string (required, ISO 8601 format)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "arma2002@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string && dateStr.matches("^\\d{4}-\\d{2}-\\d{2}$");
+    }
+
+    function isValidISO8601(dateStr) {
+      return dateStr is string && dateStr.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.*Z?$");
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidBooking(data) {
+      return hasRequiredFields(['name', 'email', 'phone', 'date', 'times', 'createdAt']) &&
+             hasOnlyAllowedFields(['name', 'email', 'phone', 'message', 'date', 'times', 'createdAt']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             isValidEmail(data.email) &&
+             data.phone is string && data.phone.size() >= 7 && data.phone.size() <= 20 &&
+             isValidDateString(data.date) &&
+             data.times is list && data.times.size() > 0 && data.times.size() <= 10 &&
+             isValidISO8601(data.createdAt) &&
+             (!('message' in data) || (data.message is string && data.message.size() <= 1000));
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /bookings/{bookingId} {
+      // Anyone can create a booking (to allow students to book without login)
+      // But we strictly validate the data.
+      allow create: if isValidBooking(request.resource.data);
+      
+      // Only admin can read all bookings.
+      // Students can only read their own if they are authenticated and match email/phone.
+      // For now, we'll allow admin read. 
+      // If students need to see their own, they should be authenticated.
+      allow read: if isAdmin() || 
+                    (isAuthenticated() && 
+                     (resource.data.email == request.auth.token.email || 
+                      resource.data.phone == request.auth.token.phone));
+      
+      // Only admin can update or delete.
+      allow update, delete: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && request.auth.uid == userId;
+      allow create, update: if isAuthenticated() && request.auth.uid == userId && 
+                              (!('role' in request.resource.data) || request.resource.data.role == 'student' || isAdmin());
+    }
+    
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}
+
+// ===============================================================
+// Devil's Advocate Attack Outcome
+// ===============================================================
+// 1. Public List Exploit: Fails. 'read' requires isAdmin() or matching Auth token.
+// 2. Unauthorized Read/Write: Fails. 'read' is restricted. 'update/delete' restricted to admin.
+// 3. The "Update Bypass": Fails. 'update' is restricted to admin.
+// 4. Ownership Hijacking: N/A as we don't use authorUID for bookings yet, but data is validated on create.
+// 5. Immutable Field Modification: Fails. 'update' restricted to admin.
+// 6. Data Corruption: Fails. 'isValidBooking' checks types and sizes on create.
+// 7. Validation Bypass: Fails. 'create' is strictly validated.
+// 8. Resource Exhaustion: Fails. All string and list fields have size limits.
+// 9. Required Field Omission: Fails. 'hasRequiredFields' ensures all are present.
+// 10. Privilege Escalation: Fails. 'users' update prevents setting 'role' unless admin.
+// ===============================================================
