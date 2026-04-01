@@ -246,6 +246,7 @@ export default function App() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
   const [isBooking, setIsBooking] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingComplete, setBookingComplete] = useState(false);
   const [userRole, setUserRole] = useState<"admin" | "student" | null>(null);
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
@@ -288,20 +289,33 @@ export default function App() {
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsBooking(false);
+    if (!selectedDate || selectedTimes.length === 0) {
+      alert("날짜와 시간을 선택해주세요.");
+      return;
+    }
+    
+    setIsSubmitting(true);
     
     try {
       const bookingData = {
-        ...formData,
-        date: selectedDate ? format(selectedDate, "yyyy-MM-dd") : "",
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        message: formData.message,
+        date: format(selectedDate, "yyyy-MM-dd"),
         times: selectedTimes,
         createdAt: new Date().toISOString()
       };
 
       await addDoc(collection(db, "bookings"), bookingData);
+      setIsBooking(false);
       setBookingComplete(true);
     } catch (error) {
+      console.error("Booking submission error:", error);
       handleFirestoreError(error, OperationType.WRITE, "bookings");
+      alert("예약 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -844,16 +858,23 @@ export default function App() {
                 <div className="flex gap-4">
                   <button 
                     type="button"
+                    disabled={isSubmitting}
                     onClick={() => setIsBooking(false)}
-                    className="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                    className="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all disabled:opacity-50"
                   >
                     취소
                   </button>
                   <button 
                     type="submit"
-                    className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 dark:shadow-none"
+                    disabled={isSubmitting}
+                    className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 dark:shadow-none disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    예약 확정하기
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        처리 중...
+                      </>
+                    ) : "예약 확정하기"}
                   </button>
                 </div>
               </form>
