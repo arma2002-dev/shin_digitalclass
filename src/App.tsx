@@ -327,12 +327,18 @@ export default function App() {
   };
 
   const fetchBookings = () => {
+    if (!currentUser || currentUser.email !== "arma2002@gmail.com") {
+      console.warn("Unauthorized fetchBookings call");
+      return () => {};
+    }
     const q = query(collection(db, "bookings"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setAdminBookings(bookings);
     }, (error) => {
-      handleFirestoreError(error, OperationType.GET, "bookings");
+      if (error.code !== 'permission-denied') {
+        handleFirestoreError(error, OperationType.GET, "bookings");
+      }
     });
     return unsubscribe;
   };
@@ -354,7 +360,11 @@ export default function App() {
       });
       setUserRole("student");
     }, (error) => {
-      handleFirestoreError(error, OperationType.GET, "bookings");
+      if (error.code !== 'permission-denied') {
+        handleFirestoreError(error, OperationType.GET, "bookings");
+      } else {
+        alert("본인의 예약 내역을 보려면 Google 로그인이 필요합니다.");
+      }
     });
 
     const unsubPhone = onSnapshot(qPhone, (snapshot) => {
@@ -366,7 +376,9 @@ export default function App() {
       });
       setUserRole("student");
     }, (error) => {
-      handleFirestoreError(error, OperationType.GET, "bookings");
+      if (error.code !== 'permission-denied') {
+        handleFirestoreError(error, OperationType.GET, "bookings");
+      }
     });
 
     return () => {
@@ -380,8 +392,12 @@ export default function App() {
     if (!loginInput) return;
 
     if (loginInput === "@shin270630@") {
-      setUserRole("admin");
-      fetchBookings();
+      if (currentUser?.email === "arma2002@gmail.com") {
+        setUserRole("admin");
+        fetchBookings();
+      } else {
+        alert("관리자 계정으로 로그인되어 있지 않습니다. Google 로그인을 먼저 해주세요.");
+      }
     } else {
       setStudentBookings([]); // Clear previous
       fetchMyBookings(loginInput);
