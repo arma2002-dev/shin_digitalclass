@@ -674,13 +674,6 @@ export default function App() {
                       className="w-full h-full object-cover"
                       loading="eager"
                       referrerPolicy="no-referrer"
-                      onError={(e) => {
-                        console.error("Image load failed, trying fallback path");
-                        const target = e.target as HTMLImageElement;
-                        if (!target.src.includes('?retry=')) {
-                          target.src = "/profile.png?retry=" + Date.now();
-                        }
-                      }}
                     />
                   ) : (
                     <User size={32} className="text-slate-400" />
