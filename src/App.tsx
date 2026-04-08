@@ -248,6 +248,7 @@ export default function App() {
   }, [userRole, currentUser]);
 
   useEffect(() => {
+    console.log("INSTRUCTOR image path:", INSTRUCTOR.image);
     async function testConnection() {
       try {
         await getDocFromServer(doc(db, 'test', 'connection'));
@@ -661,13 +662,15 @@ export default function App() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 dark:bg-blue-900/20 rounded-bl-full -z-0 opacity-50" />
               
               <div className="relative z-10">
-                <div className="w-24 h-24 rounded-2xl overflow-hidden mb-6 ring-4 ring-blue-50 dark:ring-slate-800 bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <div className="w-24 h-24 mb-6 ring-4 ring-blue-50 dark:ring-slate-800 bg-yellow-200 dark:bg-yellow-900 flex items-center justify-center relative border-4 border-red-500">
+                  <span className="absolute text-[8px] text-red-600 font-bold z-0">PHOTO AREA</span>
                   {INSTRUCTOR.image ? (
                     <img 
                       src={INSTRUCTOR.image} 
                       alt={INSTRUCTOR.name} 
-                      className="w-full h-full object-cover"
-                      loading="eager"
+                      className="w-full h-full min-w-full min-h-full object-contain block relative z-50"
+                      onLoad={() => console.log("Image loaded: ", INSTRUCTOR.image)}
+                      onError={(e) => console.error("Image load error: ", e)}
                     />
                   ) : (
                     <User size={32} className="text-slate-400" />
