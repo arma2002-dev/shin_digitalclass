@@ -36,7 +36,9 @@ import {
   Settings,
   Sun,
   Moon,
-  AlertTriangle
+  AlertTriangle,
+  Trash2,
+  Award
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "./lib/utils";
@@ -49,7 +51,8 @@ import {
   orderBy, 
   onSnapshot,
   getDocFromServer,
-  doc
+  doc,
+  deleteDoc
 } from "firebase/firestore";
 import { 
   signInWithPopup, 
@@ -175,7 +178,7 @@ const INSTRUCTOR: Instructor = {
   name: "신상엽(신강사)",
   role: "",
   bio: `현재 디지털 교육을 통해 사람들에게 실질적인 도움을 드리고자 활동하고 있는 신상엽(신강사)입니다.\n\n2016년부터 2022년까지 마산종합사회복지관에서 시니어 대상 디지털 교육(컴퓨터 & 스마트폰)을 진행하며, 누구나 쉽게 디지털을 사용할 수 있도록 돕는 수업을 이어왔습니다.\n\n제가 진행하는 수업은 다음 세 가지를 중요하게 생각합니다.\n첫째, 수강생과의 편안한 소통\n둘째, 바로 활용할 수 있는 실질적인 내용\n셋째, 반복 없이도 스스로 사용할 수 있도록 돕는 이해 중심 수업\n\n특히 디지털이 어려운 초보자나 시니어분들께 적합한 수업입니다.\n\n다가올 테크 미래와 헬스케어 분야에 관심이 많으며, 이를 수업에도 점차 반영하고 있습니다.`,
-  availability: `개인 일정상 수업 예약 가능한 요일과 시간은 아래와 같습니다.\n화,수,금 13 ~ 18시`,
+  availability: `개인 일정상 수업 예약 가능한 요일과 시간은 아래와 같습니다.\n화,수,금 13 ~ 18시\n\n문의 사항이 있으시면 전화나 메일로 보내주시면 빠르게 답변 드리겠습니다.`,
   image: "/profile.png",
   expertise: ["시니어 디지털 교육", "컴퓨터 & 스마트폰", "테크 & 헬스케어", "소통 중심 수업"],
   stats: [],
@@ -400,6 +403,19 @@ export default function App() {
     };
   };
 
+  const deleteBooking = async (id: string) => {
+    if (!window.confirm("정말 이 예약을 삭제하시겠습니까?")) return;
+    
+    try {
+      await deleteDoc(doc(db, "bookings", id));
+      alert("예약이 삭제되었습니다.");
+    } catch (error) {
+      console.error("Delete booking error:", error);
+      handleFirestoreError(error, OperationType.DELETE, `bookings/${id}`);
+      alert("삭제 중 오류가 발생했습니다.");
+    }
+  };
+
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginInput) return;
@@ -509,12 +525,13 @@ export default function App() {
                       <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">연락처</th>
                       <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">문의사항</th>
                       <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400">신청일시</th>
+                      <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-400 text-right">관리</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {adminBookings.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
+                        <td colSpan={7} className="px-6 py-12 text-center text-slate-400">
                           예약 내역이 없습니다.
                         </td>
                       </tr>
@@ -541,6 +558,15 @@ export default function App() {
                           </td>
                           <td className="px-6 py-4 text-xs text-slate-400">
                             {format(new Date(booking.createdAt), "yyyy-MM-dd HH:mm")}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <button 
+                              onClick={() => deleteBooking(booking.id)}
+                              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                              title="삭제"
+                            >
+                              <Trash2 size={16} />
+                            </button>
                           </td>
                         </tr>
                       ))
