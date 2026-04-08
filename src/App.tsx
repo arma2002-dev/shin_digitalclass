@@ -62,6 +62,7 @@ import {
   User as FirebaseUser
 } from "firebase/auth";
 import { db, auth } from "./firebase";
+import profileImg from "./assets/instructor-profile.png";
 
 // --- Error Handling ---
 enum OperationType {
@@ -179,7 +180,7 @@ const INSTRUCTOR: Instructor = {
   role: "",
   bio: `현재 디지털 교육을 통해 사람들에게 실질적인 도움을 드리고자 활동하고 있는 신상엽(신강사)입니다.\n\n2016년부터 2022년까지 마산종합사회복지관에서 시니어 대상 디지털 교육(컴퓨터 & 스마트폰)을 진행하며, 누구나 쉽게 디지털을 사용할 수 있도록 돕는 수업을 이어왔습니다.\n\n제가 진행하는 수업은 다음 세 가지를 중요하게 생각합니다.\n첫째, 수강생과의 편안한 소통\n둘째, 바로 활용할 수 있는 실질적인 내용\n셋째, 반복 없이도 스스로 사용할 수 있도록 돕는 이해 중심 수업\n\n특히 디지털이 어려운 초보자나 시니어분들께 적합한 수업입니다.\n\n다가올 테크 미래와 헬스케어 분야에 관심이 많으며, 이를 수업에도 점차 반영하고 있습니다.`,
   availability: `개인 일정상 수업 예약 가능한 요일과 시간은 아래와 같습니다.\n화,수,금 13 ~ 18시\n\n문의 사항이 있으시면 전화나 메일로 보내주시면 빠르게 답변 드리겠습니다.`,
-  image: "/instructor.jpg?v=" + Date.now(),
+  image: profileImg,
   expertise: ["시니어 디지털 교육", "컴퓨터 & 스마트폰", "테크 & 헬스케어", "소통 중심 수업"],
   stats: [],
   phone: "010.2585.7542",
@@ -661,19 +662,14 @@ export default function App() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 dark:bg-blue-900/20 rounded-bl-full -z-0 opacity-50" />
               
               <div className="relative z-10">
-                <div className="w-24 h-24 rounded-2xl overflow-hidden mb-6 ring-4 ring-blue-50 dark:ring-slate-800 bg-slate-100 dark:bg-slate-800 flex items-center justify-center relative group">
+                <div className="w-24 h-24 rounded-2xl overflow-hidden mb-6 ring-4 ring-blue-50 dark:ring-slate-800 bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
                   {INSTRUCTOR.image ? (
-                    <>
-                      <img 
-                        src={INSTRUCTOR.image} 
-                        alt={INSTRUCTOR.name} 
-                        className="w-full h-full object-cover"
-                        loading="eager"
-                      />
-                      <div className="absolute inset-0 bg-black/50 text-[8px] text-white opacity-0 group-hover:opacity-100 flex items-center justify-center break-all p-1 pointer-events-none">
-                        {INSTRUCTOR.image}
-                      </div>
-                    </>
+                    <img 
+                      src={INSTRUCTOR.image} 
+                      alt={INSTRUCTOR.name} 
+                      className="w-full h-full object-cover"
+                      loading="eager"
+                    />
                   ) : (
                     <User size={32} className="text-slate-400" />
                   )}
