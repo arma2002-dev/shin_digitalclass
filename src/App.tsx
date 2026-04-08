@@ -416,6 +416,17 @@ export default function App() {
     }
   };
 
+  const formatPhoneNumber = (value: string) => {
+    if (!value) return value;
+    const phoneNumber = value.replace(/[^\d]/g, "");
+    const phoneNumberLength = phoneNumber.length;
+    if (phoneNumberLength < 4) return phoneNumber;
+    if (phoneNumberLength < 8) {
+      return `${phoneNumber.slice(0, 3)}-${phoneNumber.slice(3)}`;
+    }
+    return `${phoneNumber.slice(0, 3)}-${phoneNumber.slice(3, 7)}-${phoneNumber.slice(7, 11)}`;
+  };
+
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginInput) return;
@@ -908,7 +919,8 @@ export default function App() {
                       placeholder="연락처"
                       className="w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:ring-2 focus:ring-blue-500 transition-all outline-none text-slate-900 dark:text-slate-100"
                       value={formData.phone}
-                      onChange={e => setFormData({...formData, phone: e.target.value})}
+                      onChange={e => setFormData({...formData, phone: formatPhoneNumber(e.target.value)})}
+                      maxLength={13}
                     />
                   </div>
                   <div className="relative">
@@ -972,16 +984,31 @@ export default function App() {
                 <CheckCircle2 size={40} />
               </div>
               <h2 className="text-3xl font-bold mb-4 text-slate-900 dark:text-slate-100">예약이 완료되었습니다!</h2>
-              <p className="text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
+              <p className="text-slate-500 dark:text-slate-400 mb-4 leading-relaxed">
                 {formData.name}님, {selectedDate && format(selectedDate, "MMMM do")} {selectedTimes.join(", ")}에 수업이 예약되었습니다. 
                 확인 이메일을 {formData.email}로 보내드렸습니다.
               </p>
-              <button 
-                onClick={resetBooking}
-                className="w-full py-4 bg-slate-900 dark:bg-blue-600 text-white rounded-2xl font-bold text-lg hover:bg-slate-800 dark:hover:bg-blue-700 transition-all"
-              >
-                홈으로 돌아가기
-              </button>
+              <p className="text-blue-600 dark:text-blue-400 font-medium mb-8">
+                예약 내용은 마이페이지에서 확인 가능합니다.
+              </p>
+              <div className="space-y-3">
+                <button 
+                  onClick={() => {
+                    const email = formData.email;
+                    resetBooking();
+                    fetchMyBookings(email);
+                  }}
+                  className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 dark:shadow-none"
+                >
+                  마이페이지에서 확인하기
+                </button>
+                <button 
+                  onClick={resetBooking}
+                  className="w-full py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-2xl font-bold text-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                >
+                  홈으로 돌아가기
+                </button>
+              </div>
             </motion.div>
           </div>
         )}
