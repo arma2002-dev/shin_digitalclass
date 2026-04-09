@@ -216,6 +216,7 @@ export default function App() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [loginInput, setLoginInput] = useState("");
   const [adminBookings, setAdminBookings] = useState<any[]>([]);
+  const [allBookings, setAllBookings] = useState<any[]>([]);
   const [studentBookings, setStudentBookings] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     name: "",
@@ -223,6 +224,18 @@ export default function App() {
     phone: "",
     message: ""
   });
+
+  useEffect(() => {
+    // Listen to all bookings to disable already booked slots for everyone
+    const q = query(collection(db, "bookings"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setAllBookings(bookings);
+    }, (error) => {
+      console.error("Error fetching all bookings for availability:", error);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -816,20 +829,36 @@ export default function App() {
                         </span>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-                        {TIME_SLOTS.map(time => (
-                          <button
-                            key={time}
-                            onClick={() => toggleTimeSlot(time)}
-                            className={cn(
-                              "py-3 px-4 rounded-xl text-sm font-bold border transition-all",
-                              selectedTimes.includes(time) 
-                                ? "bg-blue-600 border-blue-600 text-white shadow-md" 
-                                : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50 dark:hover:bg-slate-700/50"
-                            )}
-                          >
-                            {time}
-                          </button>
-                        ))}
+                        {TIME_SLOTS.map(time => {
+                          const isBooked = allBookings.some(b => 
+                            b.date === format(selectedDate, "yyyy-MM-dd") && 
+                            b.times.includes(time)
+                          );
+                          const isSelected = selectedTimes.includes(time);
+
+                          return (
+                            <button
+                              key={time}
+                              disabled={isBooked}
+                              onClick={() => toggleTimeSlot(time)}
+                              className={cn(
+                                "py-3 px-4 rounded-xl text-sm font-bold border transition-all relative overflow-hidden",
+                                isBooked
+                                  ? "bg-slate-100 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed"
+                                  : isSelected 
+                                    ? "bg-blue-600 border-blue-600 text-white shadow-md" 
+                                    : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50 dark:hover:bg-slate-700/50"
+                              )}
+                            >
+                              {time}
+                              {isBooked && (
+                                <span className="absolute inset-0 flex items-center justify-center bg-slate-50/50 dark:bg-slate-900/50 text-[10px] font-black uppercase tracking-tighter opacity-60">
+                                  Booked
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
 
