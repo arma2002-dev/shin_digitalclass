@@ -229,11 +229,14 @@ export default function App() {
 
   const studentBookings = useMemo(() => {
     if (!searchQuery) return [];
-    return allBookings.filter(b => 
-      b.email === searchQuery || 
-      b.phone === searchQuery || 
-      b.phone?.replace(/-/g, "") === searchQuery.replace(/-/g, "")
-    );
+    const searchLower = searchQuery.toLowerCase().trim();
+    const searchDigits = searchQuery.replace(/[^\d]/g, "");
+    
+    return allBookings.filter(b => {
+      const emailMatch = b.email?.toLowerCase().trim() === searchLower;
+      const phoneMatch = b.phone?.replace(/[^\d]/g, "") === searchDigits;
+      return emailMatch || (searchDigits.length >= 8 && phoneMatch);
+    });
   }, [allBookings, searchQuery]);
 
   const [formData, setFormData] = useState({
@@ -581,14 +584,12 @@ export default function App() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {studentBookings.filter(b => b.email === searchQuery || b.phone === searchQuery).length === 0 ? (
+              {studentBookings.length === 0 ? (
                 <div className="col-span-full bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-400 transition-colors duration-300">
                   조회된 예약 내역이 없습니다. (입력하신 정보: {searchQuery})
                 </div>
               ) : (
-                studentBookings
-                  .filter(b => b.email === searchQuery || b.phone === searchQuery)
-                  .map((booking) => (
+                studentBookings.map((booking) => (
                   <motion.div 
                     key={booking.id}
                     whileHover={{ y: -4 }}
