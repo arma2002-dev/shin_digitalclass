@@ -114,7 +114,8 @@ function handleFirestoreError(error: unknown, operationType: OperationType, path
     path
   }
   console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
+  // Don't throw here to avoid crashing the whole app via ErrorBoundary
+  // Instead, let the caller handle it (e.g., show an alert)
 }
 
 class ErrorBoundary extends Component<any, any> {
@@ -227,6 +228,20 @@ export default function App() {
   });
 
   useEffect(() => {
+    // Test Firestore connection
+    const testConnection = async () => {
+      try {
+        const { getDocFromServer, doc } = await import("firebase/firestore");
+        await getDocFromServer(doc(db, 'test', 'connection'));
+        console.log("Firestore connection successful");
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('the client is offline')) {
+          console.error("Please check your Firebase configuration. The client is offline.");
+        }
+      }
+    };
+    testConnection();
+
     // Listen to all bookings to disable already booked slots for everyone
     const q = query(collection(db, "bookings"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -342,14 +357,30 @@ export default function App() {
         createdAt: new Date().toISOString()
       };
 
-      console.log("Submitting booking data:", bookingData);
-      await addDoc(collection(db, "bookings"), bookingData);
+      console.log("Attempting to submit booking:", bookingData);
+      
+      // Add a timeout to addDoc to prevent hanging indefinitely
+      const addDocPromise = addDoc(collection(db, "bookings"), bookingData);
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Firestore request timed out")), 10000)
+      );
+
+      await Promise.race([addDocPromise, timeoutPromise]);
+      
+      console.log("Booking submitted successfully");
+      
+      // Close booking modal first
       setIsBooking(false);
-      setBookingComplete(true);
+      
+      // Small delay to allow booking modal to start closing before showing success
+      setTimeout(() => {
+        setBookingComplete(true);
+      }, 100);
+      
     } catch (error) {
       console.error("Booking submission error:", error);
       handleFirestoreError(error, OperationType.WRITE, "bookings");
-      alert("예약 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+      alert("예약 처리 중 오류가 발생했습니다. 다시 시도해주세요. (오류: " + (error instanceof Error ? error.message : "알 수 없음") + ")");
     } finally {
       setIsSubmitting(false);
     }
