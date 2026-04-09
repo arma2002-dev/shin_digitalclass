@@ -218,6 +218,7 @@ export default function App() {
   const [adminBookings, setAdminBookings] = useState<any[]>([]);
   const [allBookings, setAllBookings] = useState<any[]>([]);
   const [studentBookings, setStudentBookings] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -457,15 +458,14 @@ export default function App() {
     if (!loginInput) return;
 
     if (loginInput === "@shin270630@") {
-      // If they know the password, we can set them as admin
-      // But they still need the right email for Firestore rules to pass
       if (currentUser?.email === "arma2002@gmail.com") {
         setUserRole("admin");
       } else {
         alert("관리자 계정(arma2002@gmail.com)으로 Google 로그인을 먼저 해주세요.");
       }
     } else {
-      setStudentBookings([]); // Clear previous
+      setStudentBookings([]); 
+      setSearchQuery(loginInput); // Store the search query to filter
       fetchMyBookings(loginInput);
     }
     setIsLoginModalOpen(false);
@@ -629,12 +629,14 @@ export default function App() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {studentBookings.length === 0 ? (
+              {studentBookings.filter(b => b.email === searchQuery || b.phone === searchQuery).length === 0 ? (
                 <div className="col-span-full bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-400 transition-colors duration-300">
-                  조회된 예약 내역이 없습니다.
+                  조회된 예약 내역이 없습니다. (입력하신 정보: {searchQuery})
                 </div>
               ) : (
-                studentBookings.map((booking) => (
+                studentBookings
+                  .filter(b => b.email === searchQuery || b.phone === searchQuery)
+                  .map((booking) => (
                   <motion.div 
                     key={booking.id}
                     whileHover={{ y: -4 }}
