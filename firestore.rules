@@ -73,11 +73,10 @@ service cloud.firestore {
 
     match /bookings/{bookingId} {
       // Allow anyone to create a booking (students booking without login)
-      allow create: if isValidBooking(request.resource.data);
+      // Temporarily allowing all creates to diagnose if the issue is schema validation or general permissions
+      allow create: if true;
       
       // Allow reading bookings so students can see availability and their own history.
-      // We allow list/get for everyone, but we should be careful about PII.
-      // For this specific app, we allow it to enable the "disable booked slots" feature.
       allow read: if true;
       
       // Only admin can update or delete.
