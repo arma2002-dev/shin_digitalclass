@@ -216,10 +216,26 @@ export default function App() {
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [loginInput, setLoginInput] = useState("");
-  const [adminBookings, setAdminBookings] = useState<any[]>([]);
   const [allBookings, setAllBookings] = useState<any[]>([]);
-  const [studentBookings, setStudentBookings] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
+
+  const adminBookings = useMemo(() => {
+    return [...allBookings].sort((a, b) => {
+      const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+      const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+      return dateB - dateA;
+    });
+  }, [allBookings]);
+
+  const studentBookings = useMemo(() => {
+    if (!searchQuery) return [];
+    return allBookings.filter(b => 
+      b.email === searchQuery || 
+      b.phone === searchQuery || 
+      b.phone?.replace(/-/g, "") === searchQuery.replace(/-/g, "")
+    );
+  }, [allBookings, searchQuery]);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -243,12 +259,13 @@ export default function App() {
     testConnection();
 
     // Listen to all bookings to disable already booked slots for everyone
+    // Also serves as the source of truth for admin and student views
     const q = query(collection(db, "bookings"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setAllBookings(bookings);
     }, (error) => {
-      console.error("Error fetching all bookings for availability:", error);
+      console.error("Error fetching all bookings:", error);
     });
     return () => unsubscribe();
   }, []);
@@ -266,33 +283,6 @@ export default function App() {
       }
     });
     return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (userRole === "admin" && currentUser?.email === "arma2002@gmail.com") {
-      const unsub = fetchBookings();
-      return () => {
-        if (typeof unsub === 'function') unsub();
-      };
-    }
-  }, [userRole, currentUser]);
-
-  useEffect(() => {
-    async function testConnection() {
-      console.log("Testing connection to Firestore database:", firebaseConfig.firestoreDatabaseId);
-      try {
-        // Try to get a non-existent doc to test connectivity
-        await getDocFromServer(doc(db, 'test', 'connection'));
-        console.log("Firestore connection test successful.");
-      } catch (error) {
-        if(error instanceof Error && error.message.includes('the client is offline')) {
-          console.error("Please check your Firebase configuration. The client is offline.");
-        } else {
-          console.log("Firestore connection test completed (expected error if doc missing):", error);
-        }
-      }
-    }
-    testConnection();
   }, []);
 
   useEffect(() => {
@@ -393,86 +383,11 @@ export default function App() {
     setFormData({ name: "", email: "", phone: "", message: "" });
   };
 
-  const fetchBookings = () => {
-    // Use auth.currentUser directly to avoid state lag issues
-    const user = auth.currentUser;
-    if (!user || user.email !== "arma2002@gmail.com") {
-      console.warn("Unauthorized fetchBookings call");
-      return () => {};
-    }
-    const q = query(collection(db, "bookings"), orderBy("createdAt", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const bookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setAdminBookings(bookings);
-    }, (error) => {
-      if (error.code !== 'permission-denied') {
-        handleFirestoreError(error, OperationType.GET, "bookings");
-      }
-    });
-    return unsubscribe;
-  };
-
-  const fetchMyBookings = (queryStr: string) => {
-    // We'll search by email or phone. Firestore doesn't support OR queries easily across different fields without multiple queries or a complex index.
-    // For simplicity, we'll fetch and filter client-side if needed, or use two queries.
-    // Let's try to match email first, then phone.
-    
-    const qEmail = query(collection(db, "bookings"), where("email", "==", queryStr));
-    const qPhone = query(collection(db, "bookings"), where("phone", "==", queryStr));
-
-    const unsubEmail = onSnapshot(qEmail, (snapshot) => {
-      const emailBookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setStudentBookings(prev => {
-        // Filter out any existing bookings that were from the email query to avoid duplicates
-        // but keep bookings from the phone query
-        const otherBookings = prev.filter(b => !emailBookings.find(eb => eb.id === b.id));
-        const combined = [...otherBookings, ...emailBookings];
-        // CRITICAL: Filter by the CURRENT search query to ensure privacy
-        return combined.filter(b => b.email === queryStr || b.phone === queryStr);
-      });
-      if (userRole !== "admin") {
-        setUserRole("student");
-      }
-    }, (error) => {
-      if (error.code !== 'permission-denied') {
-        handleFirestoreError(error, OperationType.GET, "bookings");
-      } else {
-        alert("본인의 예약 내역을 보려면 Google 로그인이 필요합니다.");
-      }
-    });
-
-    const unsubPhone = onSnapshot(qPhone, (snapshot) => {
-      const phoneBookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setStudentBookings(prev => {
-        // Filter out any existing bookings that were from the phone query to avoid duplicates
-        const otherBookings = prev.filter(b => !phoneBookings.find(pb => pb.id === b.id));
-        const combined = [...otherBookings, ...phoneBookings];
-        // CRITICAL: Filter by the CURRENT search query to ensure privacy
-        return combined.filter(b => b.email === queryStr || b.phone === queryStr);
-      });
-      if (userRole !== "admin") {
-        setUserRole("student");
-      }
-    }, (error) => {
-      if (error.code !== 'permission-denied') {
-        handleFirestoreError(error, OperationType.GET, "bookings");
-      }
-    });
-
-    return () => {
-      unsubEmail();
-      unsubPhone();
-    };
-  };
-
   const deleteBooking = async (id: string) => {
     if (!window.confirm("정말 이 예약을 삭제하시겠습니까?")) return;
     
     try {
       await deleteDoc(doc(db, "bookings", id));
-      // Update local state immediately to ensure UI consistency
-      setAdminBookings(prev => prev.filter(b => b.id !== id));
-      setAllBookings(prev => prev.filter(b => b.id !== id));
       alert("예약이 삭제되었습니다.");
     } catch (error) {
       console.error("Delete booking error:", error);
@@ -503,9 +418,8 @@ export default function App() {
         alert("관리자 계정(arma2002@gmail.com)으로 Google 로그인을 먼저 해주세요.");
       }
     } else {
-      setStudentBookings([]); 
-      setSearchQuery(loginInput); // Store the search query to filter
-      fetchMyBookings(loginInput);
+      setSearchQuery(loginInput);
+      setUserRole("student");
     }
     setIsLoginModalOpen(false);
     setLoginInput("");
@@ -525,8 +439,7 @@ export default function App() {
     try {
       await signOut(auth);
       setUserRole(null);
-      setAdminBookings([]);
-      setStudentBookings([]);
+      setSearchQuery("");
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -582,7 +495,7 @@ export default function App() {
             <div className="flex items-center justify-between">
               <h2 className="text-3xl font-bold">전체 예약 현황 (관리자)</h2>
               <button 
-                onClick={fetchBookings}
+                onClick={() => window.location.reload()}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-bold"
               >
                 새로고침
@@ -1071,7 +984,8 @@ export default function App() {
                   onClick={() => {
                     const email = formData.email;
                     resetBooking();
-                    fetchMyBookings(email);
+                    setSearchQuery(email);
+                    setUserRole("student");
                   }}
                   className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold text-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 dark:shadow-none"
                 >
