@@ -322,20 +322,26 @@ export default function App() {
       alert("날짜와 시간을 선택해주세요.");
       return;
     }
+
+    if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim()) {
+      alert("이름, 이메일, 연락처를 모두 입력해주세요.");
+      return;
+    }
     
     setIsSubmitting(true);
     
     try {
       const bookingData = {
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        message: formData.message,
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone: formData.phone.trim(),
+        message: formData.message.trim(),
         date: format(selectedDate, "yyyy-MM-dd"),
         times: selectedTimes,
         createdAt: new Date().toISOString()
       };
 
+      console.log("Submitting booking data:", bookingData);
       await addDoc(collection(db, "bookings"), bookingData);
       setIsBooking(false);
       setBookingComplete(true);

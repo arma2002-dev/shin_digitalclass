@@ -60,11 +60,11 @@ service cloud.firestore {
     function isValidBooking(data) {
       return hasRequiredFields(['name', 'email', 'phone', 'date', 'times', 'createdAt']) &&
              data.name is string && data.name.size() > 0 &&
-             isValidEmail(data.email) &&
+             data.email is string && data.email.size() > 3 &&
              data.phone is string && data.phone.size() >= 7 &&
-             isValidDateString(data.date) &&
+             data.date is string &&
              data.times is list && data.times.size() > 0 &&
-             isValidISO8601(data.createdAt);
+             data.createdAt is string;
     }
 
     // ===============================================================
