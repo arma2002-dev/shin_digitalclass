@@ -423,9 +423,12 @@ export default function App() {
     const unsubEmail = onSnapshot(qEmail, (snapshot) => {
       const emailBookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setStudentBookings(prev => {
-        const combined = [...prev, ...emailBookings];
-        // Deduplicate
-        return Array.from(new Map(combined.map(item => [item.id, item])).values());
+        // Filter out any existing bookings that were from the email query to avoid duplicates
+        // but keep bookings from the phone query
+        const otherBookings = prev.filter(b => !emailBookings.find(eb => eb.id === b.id));
+        const combined = [...otherBookings, ...emailBookings];
+        // CRITICAL: Filter by the CURRENT search query to ensure privacy
+        return combined.filter(b => b.email === queryStr || b.phone === queryStr);
       });
       if (userRole !== "admin") {
         setUserRole("student");
@@ -441,9 +444,11 @@ export default function App() {
     const unsubPhone = onSnapshot(qPhone, (snapshot) => {
       const phoneBookings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setStudentBookings(prev => {
-        const combined = [...prev, ...phoneBookings];
-        // Deduplicate
-        return Array.from(new Map(combined.map(item => [item.id, item])).values());
+        // Filter out any existing bookings that were from the phone query to avoid duplicates
+        const otherBookings = prev.filter(b => !phoneBookings.find(pb => pb.id === b.id));
+        const combined = [...otherBookings, ...phoneBookings];
+        // CRITICAL: Filter by the CURRENT search query to ensure privacy
+        return combined.filter(b => b.email === queryStr || b.phone === queryStr);
       });
       if (userRole !== "admin") {
         setUserRole("student");
@@ -465,6 +470,9 @@ export default function App() {
     
     try {
       await deleteDoc(doc(db, "bookings", id));
+      // Update local state immediately to ensure UI consistency
+      setAdminBookings(prev => prev.filter(b => b.id !== id));
+      setAllBookings(prev => prev.filter(b => b.id !== id));
       alert("예약이 삭제되었습니다.");
     } catch (error) {
       console.error("Delete booking error:", error);
