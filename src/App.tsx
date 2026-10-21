@@ -38,7 +38,8 @@ import {
   Moon,
   AlertTriangle,
   Trash2,
-  Award
+  Award,
+  Info
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "./lib/utils";
@@ -208,6 +209,7 @@ export default function App() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
+  const [timeWarning, setTimeWarning] = useState<string | null>(null);
   const [isBooking, setIsBooking] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingComplete, setBookingComplete] = useState(false);
@@ -315,14 +317,42 @@ export default function App() {
     if (isBefore(day, startOfToday()) || isDisabledDay) return;
     setSelectedDate(day);
     setSelectedTimes([]);
+    setTimeWarning(null);
   };
 
   const toggleTimeSlot = (time: string) => {
-    setSelectedTimes(prev => 
-      prev.includes(time) 
-        ? prev.filter(t => t !== time) 
-        : [...prev, time].sort()
-    );
+    setTimeWarning(null);
+
+    // 1) 이미 선택된 시간 클릭 시 선택 해제
+    if (selectedTimes.includes(time)) {
+      setSelectedTimes(prev => prev.filter(t => t !== time));
+      return;
+    }
+
+    // 2) 아직 선택된 시간이 없는 경우 -> 1시간 선택
+    if (selectedTimes.length === 0) {
+      setSelectedTimes([time]);
+      return;
+    }
+
+    // 3) 이미 1시간이 선택되어 있는 경우 -> 연속된 시간(인접 슬롯)인지 검사하여 최대 2시간 허용
+    if (selectedTimes.length === 1) {
+      const existingIdx = TIME_SLOTS.indexOf(selectedTimes[0]);
+      const newIdx = TIME_SLOTS.indexOf(time);
+
+      if (Math.abs(existingIdx - newIdx) === 1) {
+        setSelectedTimes(prev => [...prev, time].sort());
+      } else {
+        setTimeWarning("예약은 연속된 시간으로 최대 2시간까지만 선택할 수 있습니다. (시간대를 변경하시려면 먼저 기존 선택된 시간을 취소해주세요.)");
+      }
+      return;
+    }
+
+    // 4) 이미 2시간(최대)이 선택된 경우 -> 추가 선택 차단 및 안내
+    if (selectedTimes.length >= 2) {
+      setTimeWarning("예약은 연속 최대 2시간(2개 시간대)까지만 가능합니다. 다른 시간을 선택하시려면 기존 선택을 취소해주세요.");
+      return;
+    }
   };
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
@@ -330,6 +360,21 @@ export default function App() {
     if (!selectedDate || selectedTimes.length === 0) {
       alert("날짜와 시간을 선택해주세요.");
       return;
+    }
+
+    if (selectedTimes.length > 2) {
+      alert("수업 예약은 연속 최대 2시간까지만 가능합니다.");
+      return;
+    }
+
+    if (selectedTimes.length === 2) {
+      const sorted = [...selectedTimes].sort();
+      const idx0 = TIME_SLOTS.indexOf(sorted[0]);
+      const idx1 = TIME_SLOTS.indexOf(sorted[1]);
+      if (idx1 - idx0 !== 1) {
+        alert("수업 예약은 연속된 시간(최대 2시간)으로만 가능합니다.");
+        return;
+      }
     }
 
     if (!formData.name.trim() || !formData.email.trim() || !formData.phone.trim()) {
@@ -382,6 +427,7 @@ export default function App() {
   const resetBooking = () => {
     setSelectedDate(null);
     setSelectedTimes([]);
+    setTimeWarning(null);
     setBookingComplete(false);
     setFormData({ name: "", email: "", phone: "", message: "" });
   };
