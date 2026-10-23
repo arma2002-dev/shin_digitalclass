@@ -40,7 +40,10 @@ import {
   Trash2,
   Award,
   Info,
-  Sparkles
+  Sparkles,
+  HeartHandshake,
+  SlidersHorizontal,
+  Laptop
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "./lib/utils";
@@ -755,6 +758,55 @@ export default function App() {
                         {skill}
                       </span>
                     ))}
+                  </div>
+                </div>
+
+                {/* 수업 특장점 요약 */}
+                <div className="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2 mb-3.5">
+                    <div className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400" />
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">수업 특장점 요약</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {/* 1. 초보자 환영 */}
+                    <div className="p-3.5 rounded-2xl bg-gradient-to-br from-rose-50/70 to-orange-50/40 dark:from-rose-950/20 dark:to-orange-950/10 border border-rose-100/80 dark:border-rose-900/30 flex items-start gap-3 transition-transform hover:-translate-y-0.5">
+                      <div className="w-9 h-9 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                        <HeartHandshake size={19} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-bold text-slate-900 dark:text-slate-100">초보자 환영</div>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
+                          기초가 전혀 없어도 괜찮습니다. 디지털 기기가 낯선 분들도 눈높이에 맞춰 천천히 함께합니다.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* 2. 개인 맞춤형 진도 */}
+                    <div className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-50/70 to-indigo-50/40 dark:from-blue-950/20 dark:to-indigo-950/10 border border-blue-100/80 dark:border-blue-900/30 flex items-start gap-3 transition-transform hover:-translate-y-0.5">
+                      <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                        <SlidersHorizontal size={19} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-bold text-slate-900 dark:text-slate-100">개인 맞춤형 진도</div>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
+                          정해진 진도를 억지로 따라가지 않고, 수강생 각자의 배움 속도와 필요에 딱 맞춘 1:1 맞춤 수업입니다.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* 3. 실습 위주 커리큘럼 */}
+                    <div className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-50/70 to-teal-50/40 dark:from-emerald-950/20 dark:to-teal-950/10 border border-emerald-100/80 dark:border-emerald-900/30 flex items-start gap-3 transition-transform hover:-translate-y-0.5">
+                      <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                        <Laptop size={19} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-bold text-slate-900 dark:text-slate-100">실습 위주 커리큘럼</div>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
+                          단순한 이론 강의가 아니라, 스마트폰과 컴퓨터를 직접 누르고 실습해보며 몸으로 익힙니다.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
