@@ -39,7 +39,8 @@ import {
   AlertTriangle,
   Trash2,
   Award,
-  Info
+  Info,
+  Sparkles
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "./lib/utils";
@@ -64,7 +65,6 @@ import {
 } from "firebase/auth";
 import { db, auth } from "./firebase";
 import firebaseConfig from "../firebase-applet-config.json";
-import profileImage from "/public/profile.png";
 
 // --- Error Handling ---
 enum OperationType {
@@ -161,7 +161,7 @@ interface Instructor {
   role: string;
   bio: string;
   availability?: string;
-  image: string;
+  image?: string;
   expertise: string[];
   stats: { label: string; value: string }[];
   phone: string;
@@ -181,9 +181,8 @@ interface BookingData {
 const INSTRUCTOR: Instructor = {
   name: "신상엽(신강사)",
   role: "",
-  bio: `현재 디지털 교육을 통해 사람들에게 실질적인 도움을 드리고자 활동하고 있는 신상엽(신강사)입니다.\n\n2016년부터 2022년까지 마산종합사회복지관에서 시니어 대상 디지털 교육(컴퓨터 & 스마트폰)을 진행하며, 누구나 쉽게 디지털을 사용할 수 있도록 돕는 수업을 이어왔습니다.\n\n제가 진행하는 수업은 다음 세 가지를 중요하게 생각합니다.\n첫째, 수강생과의 편안한 소통\n둘째, 바로 활용할 수 있는 실질적인 내용\n셋째, 반복 없이도 스스로 사용할 수 있도록 돕는 이해 중심 수업\n\n특히 디지털이 어려운 초보자나 시니어분들께 적합한 수업입니다.\n\n다가올 테크 미래와 헬스케어 분야에 관심이 많으며, 이를 수업에도 점차 반영하고 있습니다.`,
-  availability: `개인 일정상 수업 예약 가능한 요일과 시간은 아래와 같습니다.\n화,수,금 13 ~ 18시\n\n문의 사항이 있으시면 전화나 메일로 보내주시면 빠르게 답변 드리겠습니다.`,
-  image: profileImage,
+  bio: `현재 디지털 교육을 통해 사람들에게 실질적인 도움을 드리고자 활동하고 있는 신상엽(신강사)입니다.\n\n2016년부터 2022년까지 마산종합사회복지관에서 시니어 대상 디지털 교육(컴퓨터 & 스마트폰)을 진행하며, 누구나 쉽게 디지털을 사용할 수 있도록 돕는 수업을 이어왔습니다.\n\n스마트폰과 디지털 기기가 아직 낯선 초보자와 시니어분들도 천천히, 재미있게 배울 수 있는 수업입니다. 수업료는 무료! 부담은 내려놓고, 배움의 즐거움만 챙겨 가세요!\n\n다가올 테크 미래와 헬스케어 분야에 관심이 많으며, 이를 수업에도 점차 반영하고 있습니다.`,
+  availability: `개인 일정상 수업 예약 가능한 요일과 시간은 아래와 같습니다.\n화,수,금 13 ~ 18시\n(※ 예약시간은 하루 2시간으로 제한합니다)\n\n문의 사항이 있으시면 전화나 메일로 보내주시면 빠르게 답변 드리겠습니다.`,
   expertise: ["시니어 디지털 교육", "컴퓨터 & 스마트폰", "테크 & 헬스케어", "소통 중심 수업"],
   stats: [],
   phone: "010.2585.7542",
@@ -687,24 +686,39 @@ export default function App() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 dark:bg-blue-900/20 rounded-bl-full -z-0 opacity-50" />
               
               <div className="relative z-10">
-                <div className="w-24 h-24 rounded-2xl overflow-hidden mb-6 ring-4 ring-blue-50 dark:ring-slate-800 bg-slate-100 dark:bg-slate-800 flex items-center justify-center relative">
-                  {INSTRUCTOR.image ? (
-                    <img 
-                      src={INSTRUCTOR.image} 
-                      alt={INSTRUCTOR.name} 
-                      className="w-full h-full object-cover"
-                      loading="eager"
-                      referrerPolicy="no-referrer"
-                    />
-                  ) : (
-                    <User size={32} className="text-slate-400" />
-                  )}
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-xs font-bold mb-4">
+                  <Monitor size={14} />
+                  <span>디지털 전문 강사</span>
                 </div>
                 
                 <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-slate-100">신강사 소개</h2>
-                <p className="text-slate-600 dark:text-slate-400 leading-relaxed mb-6 text-sm whitespace-pre-line">
-                  {INSTRUCTOR.bio}
-                </p>
+                <div className="text-slate-600 dark:text-slate-400 leading-relaxed mb-6 text-sm space-y-3.5">
+                  <p>현재 디지털 교육을 통해 사람들에게 실질적인 도움을 드리고자 활동하고 있는 신상엽(신강사)입니다.</p>
+                  
+                  <p>2016년부터 2022년까지 마산종합사회복지관에서 시니어 대상 디지털 교육(컴퓨터 &amp; 스마트폰)을 진행하며, 누구나 쉽게 디지털을 사용할 수 있도록 돕는 수업을 이어왔습니다.</p>
+                  
+
+                  <p>스마트폰과 디지털 기기가 아직 낯선 초보자와 시니어분들도 천천히, 재미있게 배울 수 있는 수업입니다.</p>
+
+                  <p>다가올 테크 미래와 헬스케어 분야에 관심이 많으며, 이를 수업에도 점차 반영하고 있습니다.</p>
+
+                  {/* 눈에 띄게 강조된 무료 수업료 안내 카드 */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 dark:from-amber-950/50 dark:via-orange-950/40 dark:to-amber-950/50 border-2 border-amber-400 dark:border-amber-500 shadow-md transition-all">
+                    <div className="flex items-start gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                        <Sparkles size={20} className="text-white" />
+                      </div>
+                      <div className="space-y-1">
+                        <div className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-black bg-amber-500 text-white tracking-tight shadow-xs">
+                          수강료 전액 무료
+                        </div>
+                        <p className="text-base sm:text-[17px] font-black text-amber-950 dark:text-amber-100 leading-snug tracking-tight">
+                          수업료는 무료! 부담은 내려놓고, 배움의 즐거움만 챙겨 가세요!
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                 <div className="space-y-3 mb-6">
                   <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400 text-sm">
@@ -828,13 +842,26 @@ export default function App() {
                     className="px-6 md:px-8 pb-8"
                   >
                     <div className="pt-8 border-t border-slate-100 dark:border-slate-800">
-                      <div className="flex items-center gap-2 mb-6">
-                        <Clock size={16} className="text-blue-600 dark:text-blue-400" />
-                        <h3 className="font-bold text-slate-900 dark:text-slate-100">이용 가능한 시간</h3>
-                        <span className="text-slate-400 text-xs ml-auto">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                        <div className="flex items-center gap-2">
+                          <Clock size={16} className="text-blue-600 dark:text-blue-400" />
+                          <h3 className="font-bold text-slate-900 dark:text-slate-100">이용 가능한 시간</h3>
+                          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300">
+                            최대 2시간까지 예약 가능
+                          </span>
+                        </div>
+                        <span className="text-slate-400 text-xs">
                           {format(selectedDate, "EEEE, MMMM do")}
                         </span>
                       </div>
+
+                      {timeWarning && (
+                        <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-xl text-amber-700 dark:text-amber-300 text-xs flex items-center gap-2">
+                          <Info size={16} className="shrink-0 text-amber-600 dark:text-amber-400" />
+                          <span>{timeWarning}</span>
+                        </div>
+                      )}
+
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
                         {TIME_SLOTS.map(time => {
                           const isBooked = allBookings.some(b => 
@@ -872,8 +899,12 @@ export default function App() {
                     <motion.div 
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: selectedTimes.length > 0 ? 1 : 0.5, y: 0 }}
-                      className="mt-10"
+                      className="mt-8 space-y-2"
                     >
+                      <div className="flex items-center justify-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+                        <Info size={14} className="text-blue-600 dark:text-blue-400" />
+                        <span>예약은 하루 최대 2시간(연속 시간)까지 예약 가능합니다.</span>
+                      </div>
                       <button 
                         disabled={selectedTimes.length === 0}
                         onClick={() => setIsBooking(true)}
