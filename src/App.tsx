@@ -695,75 +695,15 @@ export default function App() {
                 </div>
                 
                 <h2 className="text-2xl font-bold mb-4 text-slate-900 dark:text-slate-100">신강사 소개</h2>
-                <div className="text-slate-600 dark:text-slate-400 leading-relaxed mb-6 text-sm space-y-3.5">
+                <div className="text-slate-600 dark:text-slate-400 leading-relaxed mb-5 text-sm space-y-3.5">
                   <p>현재 디지털 교육을 통해 사람들에게 실질적인 도움을 드리고자 활동하고 있는 신상엽(신강사)입니다.</p>
                   
                   <p>2016년부터 2022년까지 마산종합사회복지관에서 시니어 대상 디지털 교육(컴퓨터 &amp; 스마트폰)을 진행하며, 누구나 쉽게 디지털을 사용할 수 있도록 돕는 수업을 이어왔습니다.</p>
-                  
-
-                  <p>스마트폰과 디지털 기기가 아직 낯선 초보자와 시니어분들도 천천히, 재미있게 배울 수 있는 수업입니다.</p>
-
-                  <p>다가올 테크 미래와 헬스케어 분야에 관심이 많으며, 이를 수업에도 점차 반영하고 있습니다.</p>
-
-                  {/* 눈에 띄게 강조된 무료 수업료 안내 카드 */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 dark:from-amber-950/50 dark:via-orange-950/40 dark:to-amber-950/50 border-2 border-amber-400 dark:border-amber-500 shadow-md transition-all">
-                    <div className="flex items-start gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-                        <Sparkles size={20} className="text-white" />
-                      </div>
-                      <div className="space-y-1">
-                        <div className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-black bg-amber-500 text-white tracking-tight shadow-xs">
-                          수강료 전액 무료
-                        </div>
-                        <p className="text-base sm:text-[17px] font-black text-amber-950 dark:text-amber-100 leading-snug tracking-tight">
-                          수업료는 무료! 부담은 내려놓고, 배움의 즐거움만 챙겨 가세요!
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400 text-sm">
-                    <div className="w-8 h-8 bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-400">
-                      <Phone size={16} />
-                    </div>
-                    <span>{INSTRUCTOR.phone}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400 text-sm">
-                    <div className="w-8 h-8 bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-400">
-                      <Mail size={16} />
-                    </div>
-                    <span>{INSTRUCTOR.email}</span>
-                  </div>
-                </div>
-
-                {INSTRUCTOR.availability && (
-                  <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 mb-8 rounded-r-2xl shadow-sm">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Clock size={16} className="text-blue-600 dark:text-blue-400" />
-                      <span className="text-blue-700 dark:text-blue-300 font-bold text-sm">수업 가능 시간 안내</span>
-                    </div>
-                    <p className="text-blue-600 dark:text-blue-400 text-xs leading-relaxed whitespace-pre-line font-medium">
-                      {INSTRUCTOR.availability}
-                    </p>
-                  </div>
-                )}
-
-                <div className="space-y-4">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Expertise</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {INSTRUCTOR.expertise.map(skill => (
-                      <span key={skill} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full text-xs font-medium">
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
                 </div>
 
                 {/* 수업 특장점 요약 */}
-                <div className="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center gap-2 mb-3.5">
+                <div className="mb-5">
+                  <div className="flex items-center gap-2 mb-3">
                     <div className="w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400" />
                     <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">수업 특장점 요약</h3>
                   </div>
@@ -809,6 +749,63 @@ export default function App() {
                     </div>
                   </div>
                 </div>
+
+                {/* 눈에 띄게 강조된 무료 수업료 안내 카드 */}
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 dark:from-amber-950/50 dark:via-orange-950/40 dark:to-amber-950/50 border-2 border-amber-400 dark:border-amber-500 shadow-md transition-all mb-6">
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+                      <Sparkles size={20} className="text-white" />
+                    </div>
+                    <div className="space-y-1">
+                      <div className="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-black bg-amber-500 text-white tracking-tight shadow-xs">
+                        수강료 전액 무료
+                      </div>
+                      <p className="text-base sm:text-[17px] font-black text-amber-950 dark:text-amber-100 leading-snug tracking-tight">
+                        수업료는 무료! 부담은 내려놓고, 배움의 즐거움만 챙겨 가세요!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3 mb-6">
+                  <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400 text-sm">
+                    <div className="w-8 h-8 bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-400">
+                      <Phone size={16} />
+                    </div>
+                    <span>{INSTRUCTOR.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400 text-sm">
+                    <div className="w-8 h-8 bg-slate-50 dark:bg-slate-800 rounded-lg flex items-center justify-center text-slate-400">
+                      <Mail size={16} />
+                    </div>
+                    <span>{INSTRUCTOR.email}</span>
+                  </div>
+                </div>
+
+                {INSTRUCTOR.availability && (
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 mb-8 rounded-r-2xl shadow-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Clock size={16} className="text-blue-600 dark:text-blue-400" />
+                      <span className="text-blue-700 dark:text-blue-300 font-bold text-sm">수업 가능 시간 안내</span>
+                    </div>
+                    <p className="text-blue-600 dark:text-blue-400 text-xs leading-relaxed whitespace-pre-line font-medium">
+                      {INSTRUCTOR.availability}
+                    </p>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Expertise</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {INSTRUCTOR.expertise.map(skill => (
+                      <span key={skill} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full text-xs font-medium">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+
               </div>
             </motion.div>
           </div>
